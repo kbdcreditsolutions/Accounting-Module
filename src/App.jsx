@@ -1,6 +1,9 @@
 import React from 'react'
 import { NavLink, Route, Routes, useLocation } from 'react-router-dom'
-import { useStore } from './store.jsx'
+import { StoreProvider, useStore } from './store.jsx'
+import { useAuth } from './auth.jsx'
+import Login from './pages/Login.jsx'
+import Admin from './pages/Admin.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import Invoices from './pages/Invoices.jsx'
 import InvoiceForm from './pages/InvoiceForm.jsx'
@@ -22,7 +25,18 @@ const NAV = [
 ]
 
 export default function App() {
-  const { state } = useStore()
+  const { token, user } = useAuth()
+  if (!token || !user) return <Login />
+  return (
+    <StoreProvider>
+      <Shell />
+    </StoreProvider>
+  )
+}
+
+function Shell() {
+  const { state, syncState } = useStore()
+  const { user, logout } = useAuth()
   const location = useLocation()
   const printMode = /^\/invoices\/[^/]+\/print/.test(location.pathname)
 
@@ -58,9 +72,37 @@ export default function App() {
               {n.label}
             </NavLink>
           ))}
+          {user.role === 'superadmin' && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                  isActive ? 'bg-white/15 font-medium text-white' : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                }`}
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" />
+              </svg>
+              Admin Portal
+            </NavLink>
+          )}
         </nav>
-        <div className="px-5 py-4 text-[11px] text-blue-200">
-          GSTIN: {state.company.gstin || '—'}
+        <div className="border-t border-white/10 px-5 py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <div className="truncate text-xs font-medium text-white">{user.displayName || user.username}</div>
+              <div className="truncate text-[11px] text-blue-200">
+                {syncState === 'saving' ? 'Saving…' : syncState === 'error' ? '⚠ Sync failed' : `GSTIN: ${state.company.gstin || '—'}`}
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              title="Sign out"
+              className="shrink-0 rounded-lg p-1.5 text-blue-200 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4V5z"/></svg>
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -75,6 +117,7 @@ export default function App() {
           <Route path="/items" element={<Items />} />
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<Dashboard />} />
         </Routes>
