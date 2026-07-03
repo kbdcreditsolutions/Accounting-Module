@@ -7,5 +7,9 @@ export default defineConfig({
   server: {
     host: true,
     port: 3000,
+    proxy: {
+      // local dev: `node scripts/dev-api.mjs` serves the same functions Vercel runs
+      '/api': 'http://localhost:3011',
+    },
   },
 })

@@ -29,21 +29,38 @@ month-wise GST summaries for filing support.
 - Month-wise GST summary: taxable value, CGST, SGST, IGST, output tax, ITC, net payable — CSV export
 - Client-wise sales for the financial year
 
-All amounts use Indian digit grouping (₹1,23,45,678.90). Data is stored in the
-browser's localStorage — no server required. A demo dataset loads on first run;
-replace your business profile under **Settings** (and use "Reset to demo data"
-any time).
+All amounts use Indian digit grouping (₹1,23,45,678.90).
 
-## Run it
+**Multi-company with logins**
+- Company-level sign-in: every login belongs to one company and sees only that
+  company's books (clients, invoices, expenses, settings)
+- **Admin Portal** (superadmin only): create companies, create logins for
+  testers, reset passwords, disable accounts
+- Data lives in Supabase (Postgres); the browser never talks to the database
+  directly — Vercel serverless functions in `api/` hold the secret key
+
+## Setup
+
+1. **Supabase (one time):** open your project's SQL Editor and run
+   `supabase/setup.sql`. It creates the tables (`companies`, `app_users`,
+   `sessions`, `company_state`, all with RLS locked down) and seeds the
+   companies and logins.
+2. **Vercel:** in Project → Settings → Environment Variables, make sure a
+   Supabase key is available as `SUPABASE_SECRET_KEY` (the `sb_secret_…` key)
+   or `SUPABASE_SERVICE_ROLE_KEY` (legacy). `SUPABASE_URL` is optional — the
+   project URL is the default. Redeploy after adding variables.
+3. Each company's books are initialised automatically on first login.
+
+## Run locally
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
-npm run build      # production build in dist/
+node scripts/dev-api.mjs   # API on :3011 (in-memory DB unless SUPABASE_SECRET_KEY is set)
+npm run dev                # app on http://localhost:3000 (proxies /api)
 ```
 
-The production build in `dist/` is fully static — host it on any static host
-(GitHub Pages, Netlify, Vercel, a shared server).
+Without a Supabase key the local API uses an in-memory database with the same
+seed logins — handy for offline development; nothing is persisted.
 
 ## Printing invoices as PDF
 
