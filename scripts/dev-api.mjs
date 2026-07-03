@@ -8,12 +8,14 @@ import login from '../api/login.js'
 import logout from '../api/logout.js'
 import state from '../api/state.js'
 import admin from '../api/admin.js'
+import health from '../api/health.js'
 
 const routes = {
   '/api/login': login,
   '/api/logout': logout,
   '/api/state': state,
   '/api/admin': admin,
+  '/api/health': health,
 }
 
 const server = http.createServer(async (req, res) => {
