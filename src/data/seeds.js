@@ -132,6 +132,93 @@ export function sridatriSeed() {
   }
 }
 
+export function silaaSeed() {
+  const clients = [
+    { id: 's1', name: 'Trendy Boutique & Co', gstin: '27AABCT1122K1Z4', email: 'orders@trendyboutique.in', phone: '+91 98200 11223', address: '301, Fashion Street, Linking Road', city: 'Mumbai', stateCode: '27', pincode: '400050' },
+    { id: 's2', name: 'Style Hub Retail Pvt Ltd', gstin: '07AACCS5566P1Z8', email: 'purchase@stylehub.in', phone: '+91 98110 33445', address: '12, Sarojini Nagar Market', city: 'New Delhi', stateCode: '07', pincode: '110023' },
+    { id: 's3', name: 'Ethnic Weaves LLP', gstin: '24AACCE3344N1Z2', email: 'accounts@ethnicweaves.in', phone: '+91 98250 55667', address: '45, Law Garden, Navrangpura', city: 'Ahmedabad', stateCode: '24', pincode: '380009' },
+    { id: 's4', name: 'Glamour Garments Exports', gstin: '33AABCG7788Q1Z6', email: 'billing@glamourgarments.com', phone: '+91 98400 77889', address: '18, Anna Salai, T. Nagar', city: 'Chennai', stateCode: '33', pincode: '600017' },
+    { id: 's5', name: 'Runway Ready Stores', gstin: '29AAACR9900S1Z3', email: 'finance@runwayready.in', phone: '+91 99450 99001', address: '56, Koramangala 5th Block', city: 'Bengaluru', stateCode: '29', pincode: '560095' },
+  ]
+
+  const items = [
+    { id: 'sl1', name: 'Cotton Fabric (per metre)', description: 'Premium cotton woven fabric, 44-inch width', hsn: '5208', unit: 'Mtr', rate: 350, gstRate: 5, type: 'goods' },
+    { id: 'sl2', name: 'Synthetic Fabric (per metre)', description: 'Polyester/viscose blend fabric, 60-inch width', hsn: '5407', unit: 'Mtr', rate: 420, gstRate: 5, type: 'goods' },
+    { id: 'sl3', name: "Men's Formal Shirt", description: 'Full-sleeve cotton formal shirt, assorted sizes', hsn: '6205', unit: 'Nos', rate: 1200, gstRate: 12, type: 'goods' },
+    { id: 'sl4', name: "Men's Trousers", description: 'Formal/casual trousers, cotton-polyester blend', hsn: '6203', unit: 'Nos', rate: 1800, gstRate: 12, type: 'goods' },
+    { id: 'sl5', name: "Women's Kurti (basic)", description: 'Printed cotton kurti, sizes XS–3XL', hsn: '6211', unit: 'Nos', rate: 850, gstRate: 5, type: 'goods' },
+    { id: 'sl6', name: 'Salwar Kameez Set', description: 'Kurta + churidar + dupatta set, ethnic prints', hsn: '6211', unit: 'Set', rate: 2200, gstRate: 12, type: 'goods' },
+    { id: 'sl7', name: 'Designer Lehenga Set', description: 'Embroidered lehenga + choli + dupatta, bridal/festive', hsn: '6204', unit: 'Set', rate: 8500, gstRate: 12, type: 'goods' },
+    { id: 'sl8', name: 'Silk Saree', description: 'Pure silk saree with blouse piece, 6.3 metres', hsn: '6211', unit: 'Nos', rate: 5500, gstRate: 12, type: 'goods' },
+    { id: 'sl9', name: 'Embroidered Dupatta', description: 'Georgette dupatta with zari embroidery', hsn: '6214', unit: 'Nos', rate: 950, gstRate: 5, type: 'goods' },
+    { id: 'sl10', name: "Casual T-Shirt", description: 'Round-neck cotton jersey t-shirt, unisex', hsn: '6205', unit: 'Nos', rate: 599, gstRate: 5, type: 'goods' },
+    { id: 'sl11', name: 'Stole / Shawl', description: 'Woollen / silk-blend stole, assorted prints', hsn: '6214', unit: 'Nos', rate: 1100, gstRate: 12, type: 'goods' },
+    { id: 'sl12', name: 'Custom Stitching Charges', description: 'Tailoring & alterations per garment', hsn: '998821', unit: 'Nos', rate: 500, gstRate: 5, type: 'service' },
+  ]
+
+  const mk = (n, clientId, date, dueDays, lines, status, amountPaid = 0) => ({
+    id: uid(), number: n, clientId, date, dueDate: addDaysISO(date, dueDays),
+    items: lines, status, amountPaid, notes: 'Thank you for shopping with Silaa. Goods once sold will not be taken back unless defective.',
+  })
+  const L = (itemId, qty, over = {}) => {
+    const it = items.find((x) => x.id === itemId)
+    return { name: it.name, description: it.description, hsn: it.hsn, unit: it.unit, qty, rate: it.rate, discountPct: 0, gstRate: it.gstRate, ...over }
+  }
+
+  const invoices = [
+    mk('SLA/26-27/0001', 's1', '2026-04-08', 30, [L('sl3', 24), L('sl4', 12)], 'paid', 63168),
+    mk('SLA/26-27/0002', 's2', '2026-04-15', 15, [L('sl5', 50), L('sl10', 30)], 'paid', 69825),
+    mk('SLA/26-27/0003', 's3', '2026-04-22', 30, [L('sl1', 200), L('sl2', 150)], 'paid', 107100),
+    mk('SLA/26-27/0004', 's4', '2026-05-05', 45, [L('sl8', 10), L('sl7', 4)], 'paid', 99660),
+    mk('SLA/26-27/0005', 's5', '2026-05-12', 30, [L('sl6', 20), L('sl9', 20)], 'paid', 72010),
+    mk('SLA/26-27/0006', 's1', '2026-05-20', 30, [L('sl3', 36), L('sl10', 60)], 'partial', 60000),
+    mk('SLA/26-27/0007', 's2', '2026-06-03', 15, [L('sl11', 15), L('sl12', 30)], 'sent'),
+    mk('SLA/26-27/0008', 's3', '2026-06-15', 30, [L('sl1', 300), L('sl2', 200)], 'sent'),
+    mk('SLA/26-27/0009', 's4', '2026-06-25', 45, [L('sl7', 6), L('sl8', 8)], 'draft'),
+  ]
+
+  const expenses = [
+    { id: uid(), date: '2026-04-05', category: 'Rent', vendor: 'Mehta Properties', description: 'Showroom rent — April', amount: 55000, gstAmount: 0, paymentMode: 'Bank Transfer' },
+    { id: uid(), date: '2026-04-10', category: 'Raw Materials', vendor: 'Tiruppur Fabrics Mart', description: 'Cotton fabric purchase (bolt stock)', amount: 145600, gstAmount: 6933, paymentMode: 'Bank Transfer' },
+    { id: uid(), date: '2026-04-18', category: 'Labour', vendor: 'S. Lakshmanan Tailors', description: 'Contract stitching — April batch', amount: 28000, gstAmount: 0, paymentMode: 'Bank Transfer' },
+    { id: uid(), date: '2026-05-02', category: 'Rent', vendor: 'Mehta Properties', description: 'Showroom rent — May', amount: 55000, gstAmount: 0, paymentMode: 'Bank Transfer' },
+    { id: uid(), date: '2026-05-08', category: 'Packaging', vendor: 'PrintXcel', description: 'Branded bags, tags, tissue paper', amount: 18880, gstAmount: 2880, paymentMode: 'Card' },
+    { id: uid(), date: '2026-05-20', category: 'Marketing', vendor: 'Meta India', description: 'Instagram / Facebook Ads — May', amount: 23600, gstAmount: 3600, paymentMode: 'Card' },
+    { id: uid(), date: '2026-06-02', category: 'Rent', vendor: 'Mehta Properties', description: 'Showroom rent — June', amount: 55000, gstAmount: 0, paymentMode: 'Bank Transfer' },
+    { id: uid(), date: '2026-06-10', category: 'Raw Materials', vendor: 'Surat Textile House', description: 'Silk & synthetic fabric stock', amount: 212400, gstAmount: 10114, paymentMode: 'Bank Transfer' },
+    { id: uid(), date: '2026-06-22', category: 'Utilities', vendor: 'MSEDCL', description: 'Electricity bill — showroom', amount: 9440, gstAmount: 0, paymentMode: 'UPI' },
+    { id: uid(), date: '2026-07-01', category: 'Rent', vendor: 'Mehta Properties', description: 'Showroom rent — July', amount: 55000, gstAmount: 0, paymentMode: 'Bank Transfer' },
+  ]
+
+  return {
+    company: {
+      name: 'Silaa',
+      tagline: 'Apparel & Fashion • Ethnic Wear • Ready-to-Wear',
+      gstin: '',
+      pan: '',
+      address: '',
+      city: '',
+      stateCode: '27',
+      pincode: '',
+      phone: '',
+      email: '',
+      bankName: '',
+      bankAccount: '',
+      bankIfsc: '',
+      bankBranch: '',
+      upiId: '',
+      invoicePrefix: 'SLA',
+      terms: 'Goods once sold will not be taken back unless defective. Claims for shortage or damage must be raised within 48 hours of delivery. All disputes subject to Mumbai jurisdiction.',
+      logo: '',
+    },
+    nextSeq: 10,
+    clients,
+    items,
+    invoices,
+    expenses,
+  }
+}
+
 export function blankSeed(companyName) {
   return {
     company: {
@@ -153,5 +240,6 @@ export function blankSeed(companyName) {
 export function seedForCompany(code, name) {
   if (code === 'kbd') return kbdSeed()
   if (code === 'sridatri') return sridatriSeed()
+  if (code === 'silaa') return silaaSeed()
   return blankSeed(name)
 }
