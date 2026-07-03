@@ -127,6 +127,7 @@ const pgDriver = {
 
 const KBD_ID = '6d6c00f1-b16a-47bb-b55f-16164a42a759'
 const SRI_ID = '0023ceee-dcd6-48a7-83f7-11127a939ba8'
+const SLA_ID = 'b4e12f3a-7c91-4d58-ae23-9f0d6b8c5e71'
 
 const g = globalThis
 if (!g.__memdb) {
@@ -134,10 +135,12 @@ if (!g.__memdb) {
     companies: [
       { id: KBD_ID, name: 'KBD Credit Solutions', code: 'kbd', created_at: new Date().toISOString() },
       { id: SRI_ID, name: 'SRIDATRI PHYSIO CARE', code: 'sridatri', created_at: new Date().toISOString() },
+      { id: SLA_ID, name: 'Silaa', code: 'silaa', created_at: new Date().toISOString() },
     ],
     users: [
       { id: 'ad45e87b-e75b-426a-8edf-3ef7dd1674ff', company_id: KBD_ID, username: 'Admin', password_hash: hashPassword('Admin@2026'), display_name: 'KBD Admin', role: 'superadmin', active: true, created_at: new Date().toISOString() },
       { id: 'd09b4090-0c3f-476a-9820-7575c2e7af09', company_id: SRI_ID, username: 'Sridatri', password_hash: hashPassword('Sridatri@2026'), display_name: 'Sridatri Physio Care', role: 'user', active: true, created_at: new Date().toISOString() },
+      { id: 'e7f23c4b-1d82-5e69-bf34-0a1e7c9d6f82', company_id: SLA_ID, username: 'Silaa', password_hash: hashPassword('Admin@2026'), display_name: 'Silaa Admin', role: 'user', active: true, created_at: new Date().toISOString() },
     ],
     sessions: [],
     state: new Map(),
