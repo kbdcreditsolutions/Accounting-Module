@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* dataviz reference palette (light mode) */
+  --color-surface-1: #fcfcfb;
+  --color-page: #f9f9f7;
+  --color-ink: #0b0b0b;
+  --color-ink-2: #52514e;
+  --color-ink-muted: #898781;
+  --color-grid: #e1e0d9;
+  --color-baseline: #c3c2b7;
+  --color-series-1: #2a78d6;
+  --color-series-1-deep: #1c5cab;
+  --color-series-2: #1baf7a;
+  --color-status-good: #0ca30c;
+  --color-status-warn: #fab219;
+  --color-status-serious: #ec835a;
+  --color-status-critical: #d03b3b;
+  --color-good-text: #006300;
+  --color-brand: #1c5cab;
+  --color-brand-deep: #104281;
+}
+
+html, body {
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+/* number columns that must align */
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* ---------- Print: only the invoice sheet ---------- */
+@media print {
+  @page { size: A4; margin: 10mm; }
+  html, body { background: #fff; }
+  .no-print { display: none !important; }
+  .print-root {
+    position: absolute;
+    inset: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+  .invoice-sheet {
+    box-shadow: none !important;
+    border: 1px solid #000 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
