@@ -4,6 +4,7 @@ import { useStore } from '../store.jsx'
 import { Button } from '../components/ui.jsx'
 import { stateName } from '../data/states.js'
 import { fmtINR, fmtDate, computeInvoiceTotals, amountInWords, round2 } from '../utils/format'
+import { getConfig } from '../data/companyConfig.js'
 
 export default function InvoiceView() {
   const { state } = useStore()
@@ -25,6 +26,9 @@ export default function InvoiceView() {
   const interState = client ? client.stateCode !== co.stateCode : false
   const totals = computeInvoiceTotals(inv.items, interState)
   const balance = Math.max(totals.grandTotal - (Number(inv.amountPaid) || 0), 0)
+  const cfg = getConfig(co)
+  const invoiceFields = cfg.customFields.invoice || []
+  const { showHsn, showDiscount } = cfg.invoiceTemplate
 
   // HSN-wise tax summary (required on GST invoices)
   const hsnSummary = (() => {
@@ -105,6 +109,10 @@ export default function InvoiceView() {
                 <MetaRow k="Due Date" v={fmtDate(inv.dueDate)} />
                 <MetaRow k="Place of Supply" v={`${stateName(client?.stateCode || co.stateCode)} (${client?.stateCode || co.stateCode})`} />
                 <MetaRow k="Supply Type" v={interState ? 'Inter-State (IGST)' : 'Intra-State (CGST + SGST)'} />
+                {invoiceFields.map((f) => inv.customData?.[f.key]
+                  ? <MetaRow key={f.key} k={f.label} v={inv.customData[f.key]} />
+                  : null
+                )}
               </tbody>
             </table>
           </div>
@@ -116,10 +124,10 @@ export default function InvoiceView() {
             <tr className="bg-blue-900 text-white">
               <Th>#</Th>
               <Th className="text-left">Item &amp; Description</Th>
-              <Th>HSN/SAC</Th>
+              {showHsn && <Th>HSN/SAC</Th>}
               <Th>Qty</Th>
               <Th>Rate (₹)</Th>
-              <Th>Disc.</Th>
+              {showDiscount && <Th>Disc.</Th>}
               <Th>Taxable (₹)</Th>
               {interState ? <Th>IGST</Th> : <><Th>CGST</Th><Th>SGST</Th></>}
               <Th>Total (₹)</Th>
@@ -136,10 +144,10 @@ export default function InvoiceView() {
                     <div className="font-medium">{it.name}</div>
                     {it.description && <div className="text-[11px] text-gray-600">{it.description}</div>}
                   </Td>
-                  <Td center>{it.hsn || '—'}</Td>
+                  {showHsn && <Td center>{it.hsn || '—'}</Td>}
                   <Td center>{it.qty} {it.unit}</Td>
                   <Td right>{fmtINR(it.rate).replace('₹', '')}</Td>
-                  <Td center>{Number(it.discountPct) > 0 ? `${it.discountPct}%` : '—'}</Td>
+                  {showDiscount && <Td center>{Number(it.discountPct) > 0 ? `${it.discountPct}%` : '—'}</Td>}
                   <Td right>{fmtINR(l.taxable).replace('₹', '')}</Td>
                   {interState ? (
                     <Td right>

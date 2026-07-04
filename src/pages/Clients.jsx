@@ -3,13 +3,17 @@ import { useStore } from '../store.jsx'
 import { Card, Button, PageHeader, Field, Input, Select, Modal, Empty } from '../components/ui.jsx'
 import { INDIAN_STATES, stateName } from '../data/states.js'
 import { fmtINR0, computeInvoiceTotals, isValidGSTIN } from '../utils/format'
+import { getConfig } from '../data/companyConfig.js'
 
-const blank = { name: '', gstin: '', email: '', phone: '', address: '', city: '', stateCode: '07', pincode: '' }
+const blank = { name: '', gstin: '', email: '', phone: '', address: '', city: '', stateCode: '07', pincode: '', customData: {} }
 
 export default function Clients() {
   const { state, saveClient, deleteClient } = useStore()
   const [editing, setEditing] = useState(null)
   const [q, setQ] = useState('')
+  const cfg = getConfig(state.company)
+  const lc = cfg.labels
+  const clientFields = cfg.customFields.client || []
 
   const rows = useMemo(() => {
     const t = q.trim().toLowerCase()
@@ -31,9 +35,9 @@ export default function Clients() {
   return (
     <div>
       <PageHeader
-        title="Clients"
-        subtitle="Manage your customers and their GST details"
-        actions={<Button onClick={() => setEditing({ ...blank })}>+ Add Client</Button>}
+        title={lc.clients}
+        subtitle={`Manage your ${lc.clients.toLowerCase()} and their GST details`}
+        actions={<Button onClick={() => setEditing({ ...blank, customData: {} })}>+ Add {lc.client}</Button>}
       />
 
       <div className="mb-4 w-72">
@@ -42,12 +46,12 @@ export default function Clients() {
 
       <Card>
         {rows.length === 0 ? (
-          <Empty>No clients yet. Add your first client to start invoicing.</Empty>
+          <Empty>No {lc.clients.toLowerCase()} yet. Add your first {lc.client.toLowerCase()} to start invoicing.</Empty>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-ink-muted">
-                <th className="px-5 py-3 font-medium">Client</th>
+                <th className="px-5 py-3 font-medium">{lc.client}</th>
                 <th className="px-3 py-3 font-medium">GSTIN</th>
                 <th className="px-3 py-3 font-medium">State</th>
                 <th className="px-3 py-3 text-right font-medium">Invoices</th>
@@ -74,7 +78,7 @@ export default function Clients() {
                       className="text-xs font-medium text-status-critical hover:underline"
                       onClick={() => {
                         if (state.invoices.some((i) => i.clientId === c.id)) {
-                          alert('This client has invoices and cannot be deleted.')
+                          alert(`This ${lc.client.toLowerCase()} has invoices and cannot be deleted.`)
                           return
                         }
                         if (confirm(`Delete ${c.name}?`)) deleteClient(c.id)
@@ -90,10 +94,10 @@ export default function Clients() {
         )}
       </Card>
 
-      <Modal open={!!editing} onClose={() => setEditing(null)} title={editing?.id ? 'Edit Client' : 'Add Client'} wide>
+      <Modal open={!!editing} onClose={() => setEditing(null)} title={editing?.id ? `Edit ${lc.client}` : `Add ${lc.client}`} wide>
         {editing && (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <Field label="Business / Client Name" required className="md:col-span-2">
+            <Field label={`${lc.client} Name`} required className="md:col-span-2">
               <Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} />
             </Field>
             <Field label="GSTIN">
@@ -131,13 +135,22 @@ export default function Clients() {
             <Field label="PIN Code">
               <Input value={editing.pincode} onChange={(e) => setEditing({ ...editing, pincode: e.target.value })} />
             </Field>
+            {clientFields.map((f) => (
+              <Field key={f.key} label={f.label}>
+                <Input
+                  type={f.type === 'date' ? 'date' : 'text'}
+                  value={editing.customData?.[f.key] || ''}
+                  onChange={(e) => setEditing({ ...editing, customData: { ...(editing.customData || {}), [f.key]: e.target.value } })}
+                />
+              </Field>
+            ))}
             <div className="flex justify-end gap-2 md:col-span-2">
               <Button variant="secondary" onClick={() => setEditing(null)}>Cancel</Button>
               <Button
                 disabled={!editing.name.trim() || !gstinOk}
                 onClick={() => { saveClient(editing); setEditing(null) }}
               >
-                Save Client
+                Save {lc.client}
               </Button>
             </div>
           </div>

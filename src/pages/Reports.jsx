@@ -4,9 +4,12 @@ import { Card, PageHeader, Button } from '../components/ui.jsx'
 import {
   fmtINR, fmtINR0, today, fyStartYear, fyLabel, fyMonths, computeInvoiceTotals, round2,
 } from '../utils/format'
+import { getConfig } from '../data/companyConfig.js'
 
 export default function Reports() {
   const { state } = useStore()
+  const cfg = getConfig(state.company)
+  const lc = cfg.labels
   const currentFY = fyStartYear(today())
   const [fy, setFy] = useState(currentFY)
 
@@ -86,7 +89,7 @@ export default function Reports() {
     <div>
       <PageHeader
         title="GST & Reports"
-        subtitle="Month-wise GST liability and client-wise sales for filing support"
+        subtitle={`Month-wise GST liability and ${lc.client.toLowerCase()}-wise sales for filing support`}
         actions={
           <>
             <select value={fy} onChange={(e) => setFy(Number(e.target.value))}
@@ -148,7 +151,7 @@ export default function Reports() {
 
       <Card className="mt-4 overflow-x-auto">
         <div className="border-b border-grid px-5 py-3.5">
-          <h3 className="text-sm font-semibold">Client-wise Sales — {fyLabel(fy)}</h3>
+          <h3 className="text-sm font-semibold">{lc.client}-wise Sales — {fyLabel(fy)}</h3>
         </div>
         {report.clients.length === 0 ? (
           <p className="px-5 py-8 text-center text-sm text-ink-muted">No finalised invoices in {fyLabel(fy)}.</p>
@@ -156,7 +159,7 @@ export default function Reports() {
           <table className="w-full min-w-[680px] text-sm">
             <thead>
               <tr className="text-left text-xs text-ink-muted">
-                <th className="px-5 py-3 font-medium">Client</th>
+                <th className="px-5 py-3 font-medium">{lc.client}</th>
                 <th className="px-3 py-3 font-medium">GSTIN</th>
                 <th className="px-3 py-3 text-right font-medium">Invoices</th>
                 <th className="px-3 py-3 text-right font-medium">Taxable Value</th>

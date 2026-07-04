@@ -7,10 +7,13 @@ import {
   fmtINR0, fmtCompactINR, fmtDate, today, fyStartYear, fyLabel, fyMonths,
   computeInvoiceTotals,
 } from '../utils/format'
+import { getConfig } from '../data/companyConfig.js'
 
 export default function Dashboard() {
   const { state } = useStore()
   const navigate = useNavigate()
+  const cfg = getConfig(state.company)
+  const lc = cfg.labels
   const currentFY = fyStartYear(today())
   const [fy, setFy] = useState(currentFY)
 
@@ -136,7 +139,7 @@ export default function Dashboard() {
             <thead>
               <tr className="text-left text-xs text-ink-muted">
                 <th className="px-5 py-2.5 font-medium">Invoice</th>
-                <th className="px-3 py-2.5 font-medium">Client</th>
+                <th className="px-3 py-2.5 font-medium">{lc.client}</th>
                 <th className="px-3 py-2.5 font-medium">Date</th>
                 <th className="px-3 py-2.5 text-right font-medium">Amount</th>
                 <th className="px-5 py-2.5 font-medium">Status</th>
@@ -162,7 +165,7 @@ export default function Dashboard() {
 
         {/* Top clients */}
         <Card className="p-5">
-          <h3 className="mb-4 text-sm font-semibold">Top Clients — {fyLabel(fy)}</h3>
+          <h3 className="mb-4 text-sm font-semibold">Top {lc.clients} — {fyLabel(fy)}</h3>
           {data.topClients.length === 0 && <p className="text-sm text-ink-muted">No invoices this year yet.</p>}
           <ul className="space-y-3">
             {data.topClients.map(([name, amt], i) => {

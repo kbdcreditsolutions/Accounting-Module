@@ -4,6 +4,7 @@ import { useStore } from '../store.jsx'
 import { Card, Button, PageHeader, Field, Input, Select, Textarea } from '../components/ui.jsx'
 import { GST_RATES, stateName } from '../data/states.js'
 import { fmtINR, today, addDays, computeInvoiceTotals, amountInWords } from '../utils/format'
+import { getConfig } from '../data/companyConfig.js'
 
 const emptyLine = () => ({ name: '', description: '', hsn: '', unit: 'Nos', qty: 1, rate: '', discountPct: 0, gstRate: 18 })
 
@@ -29,6 +30,10 @@ export default function InvoiceForm() {
   const client = state.clients.find((c) => c.id === inv.clientId)
   const interState = client ? client.stateCode !== state.company.stateCode : false
   const totals = useMemo(() => computeInvoiceTotals(inv.items, interState), [inv.items, interState])
+  const cfg = getConfig(state.company)
+  const lc = cfg.labels
+  const invoiceFields = cfg.customFields.invoice || []
+  const { showHsn, showDiscount } = cfg.invoiceTemplate
 
   const set = (patch) => setInv((v) => ({ ...v, ...patch }))
   const setLine = (i, patch) =>
@@ -63,9 +68,9 @@ export default function InvoiceForm() {
 
       <Card className="p-5">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <Field label="Bill To (Client)" required>
+          <Field label={`Bill To (${lc.client})`} required>
             <Select value={inv.clientId} onChange={(e) => set({ clientId: e.target.value })}>
-              <option value="">Select client…</option>
+              <option value="">Select {lc.client.toLowerCase()}…</option>
               {state.clients.map((c) => (
                 <option key={c.id} value={c.id}>{c.name} — {stateName(c.stateCode)}</option>
               ))}
@@ -86,6 +91,19 @@ export default function InvoiceForm() {
             {client.gstin && <> · GSTIN: <span className="tnum font-medium">{client.gstin}</span></>}
           </div>
         )}
+        {invoiceFields.length > 0 && (
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {invoiceFields.map((f) => (
+              <Field key={f.key} label={f.label}>
+                <Input
+                  type={f.type === 'date' ? 'date' : 'text'}
+                  value={inv.customData?.[f.key] || ''}
+                  onChange={(e) => set({ customData: { ...(inv.customData || {}), [f.key]: e.target.value } })}
+                />
+              </Field>
+            ))}
+          </div>
+        )}
       </Card>
 
       {/* Line items */}
@@ -95,11 +113,11 @@ export default function InvoiceForm() {
           <thead>
             <tr className="text-left text-xs text-ink-muted">
               <th className="w-[30%] pb-2 font-medium">Item / Service</th>
-              <th className="w-24 pb-2 font-medium">HSN/SAC</th>
+              {showHsn && <th className="w-24 pb-2 font-medium">HSN/SAC</th>}
               <th className="w-16 pb-2 font-medium">Qty</th>
               <th className="w-16 pb-2 font-medium">Unit</th>
               <th className="w-28 pb-2 font-medium">Rate (₹)</th>
-              <th className="w-20 pb-2 font-medium">Disc %</th>
+              {showDiscount && <th className="w-20 pb-2 font-medium">Disc %</th>}
               <th className="w-24 pb-2 font-medium">GST %</th>
               <th className="w-28 pb-2 text-right font-medium">Amount</th>
               <th className="w-8 pb-2"></th>
@@ -120,11 +138,11 @@ export default function InvoiceForm() {
                     }}
                   />
                 </td>
-                <td className="py-1.5 pr-2"><Input value={it.hsn} onChange={(e) => setLine(i, { hsn: e.target.value })} /></td>
+                {showHsn && <td className="py-1.5 pr-2"><Input value={it.hsn} onChange={(e) => setLine(i, { hsn: e.target.value })} /></td>}
                 <td className="py-1.5 pr-2"><Input type="number" min="0" value={it.qty} onChange={(e) => setLine(i, { qty: e.target.value })} /></td>
                 <td className="py-1.5 pr-2"><Input value={it.unit} onChange={(e) => setLine(i, { unit: e.target.value })} /></td>
                 <td className="py-1.5 pr-2"><Input type="number" min="0" value={it.rate} onChange={(e) => setLine(i, { rate: e.target.value })} /></td>
-                <td className="py-1.5 pr-2"><Input type="number" min="0" max="100" value={it.discountPct} onChange={(e) => setLine(i, { discountPct: e.target.value })} /></td>
+                {showDiscount && <td className="py-1.5 pr-2"><Input type="number" min="0" max="100" value={it.discountPct} onChange={(e) => setLine(i, { discountPct: e.target.value })} /></td>}
                 <td className="py-1.5 pr-2">
                   <Select value={it.gstRate} onChange={(e) => setLine(i, { gstRate: Number(e.target.value) })}>
                     {GST_RATES.map((r) => <option key={r} value={r}>{r}%</option>)}
