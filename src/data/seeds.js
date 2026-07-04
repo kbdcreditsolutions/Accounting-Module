@@ -1,5 +1,6 @@
 // Per-company starting datasets. Shared by the frontend (reset-to-demo)
 // and the API (first-login initialisation), so keep this file free of JSX.
+import { DEFAULT_CONFIG, INDUSTRY_PRESETS } from './companyConfig.js'
 
 const uid = () => Math.random().toString(36).slice(2, 10)
 
@@ -88,6 +89,7 @@ export function kbdSeed() {
       invoicePrefix: 'KBD',
       terms: 'Payment is due within the due date mentioned above. Interest @18% p.a. will be charged on delayed payments. All disputes subject to Delhi jurisdiction.',
       logo: '',
+      config: { industry: 'credit-finance', ...INDUSTRY_PRESETS['credit-finance'].config },
     },
     nextSeq: 12,
     clients,
@@ -118,6 +120,7 @@ export function sridatriSeed() {
       invoicePrefix: 'SPC',
       terms: 'Payment is due on receipt of this invoice. Health care services provided by a clinical establishment are exempt from GST (Notification 12/2017-CT(R)).',
       logo: '',
+      config: { industry: 'healthcare', ...INDUSTRY_PRESETS['healthcare'].config },
     },
     nextSeq: 1,
     clients: [],
@@ -210,6 +213,7 @@ export function silaaSeed() {
       invoicePrefix: 'SLA',
       terms: 'Goods once sold will not be taken back unless defective. Claims for shortage or damage must be raised within 48 hours of delivery. All disputes subject to Mumbai jurisdiction.',
       logo: '',
+      config: { industry: 'apparel-fashion', ...INDUSTRY_PRESETS['apparel-fashion'].config },
     },
     nextSeq: 10,
     clients,
@@ -228,6 +232,7 @@ export function blankSeed(companyName) {
       invoicePrefix: (companyName || 'INV').replace(/[^A-Za-z]/g, '').slice(0, 3).toUpperCase() || 'INV',
       terms: 'Payment is due within the due date mentioned above.',
       logo: '',
+      config: { ...DEFAULT_CONFIG },
     },
     nextSeq: 1,
     clients: [],

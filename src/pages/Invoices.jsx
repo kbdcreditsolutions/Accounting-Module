@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useStore, displayStatus } from '../store.jsx'
 import { Card, StatusBadge, Button, PageHeader, Select, Input, Empty, Modal, Field } from '../components/ui.jsx'
 import { fmtINR, fmtDate, computeInvoiceTotals } from '../utils/format'
+import { getConfig } from '../data/companyConfig.js'
 
 const STATUS_FILTERS = [
   { value: 'all', label: 'All statuses' },
@@ -16,6 +17,8 @@ const STATUS_FILTERS = [
 export default function Invoices() {
   const { state, deleteInvoice, setInvoiceStatus } = useStore()
   const navigate = useNavigate()
+  const cfg = getConfig(state.company)
+  const lc = cfg.labels
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('all')
   const [payFor, setPayFor] = useState(null) // invoice being marked paid
@@ -61,7 +64,7 @@ export default function Invoices() {
 
       <div className="mb-4 flex flex-wrap gap-3">
         <div className="w-72">
-          <Input placeholder="Search invoice no. or client…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input placeholder={`Search invoice no. or ${lc.client.toLowerCase()}…`} value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
         <div className="w-48">
           <Select value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -78,7 +81,7 @@ export default function Invoices() {
             <thead>
               <tr className="text-left text-xs text-ink-muted">
                 <th className="px-5 py-3 font-medium">Invoice No.</th>
-                <th className="px-3 py-3 font-medium">Client</th>
+                <th className="px-3 py-3 font-medium">{lc.client}</th>
                 <th className="px-3 py-3 font-medium">Date</th>
                 <th className="px-3 py-3 font-medium">Due</th>
                 <th className="px-3 py-3 text-right font-medium">Total</th>

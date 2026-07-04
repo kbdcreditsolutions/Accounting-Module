@@ -3,13 +3,39 @@ import { useStore } from '../store.jsx'
 import { Card, Button, PageHeader, Field, Input, Select, Textarea } from '../components/ui.jsx'
 import { INDIAN_STATES } from '../data/states.js'
 import { isValidGSTIN } from '../utils/format'
+import { INDUSTRY_PRESETS, DEFAULT_CONFIG } from '../data/companyConfig.js'
 
 export default function Settings() {
   const { state, saveCompany, resetDemo } = useStore()
-  const [form, setForm] = useState({ ...state.company })
+  const [form, setForm] = useState(() => ({
+    ...state.company,
+    config: state.company.config ? { ...DEFAULT_CONFIG, ...state.company.config } : { ...DEFAULT_CONFIG },
+  }))
   const [saved, setSaved] = useState(false)
 
   const set = (patch) => { setForm((f) => ({ ...f, ...patch })); setSaved(false) }
+  const setCfg = (patch) => set({ config: { ...form.config, ...patch } })
+  const setCfgLabels = (patch) => setCfg({ labels: { ...form.config.labels, ...patch } })
+  const setCfgFeatures = (patch) => setCfg({ features: { ...form.config.features, ...patch } })
+  const setCfgTemplate = (patch) => setCfg({ invoiceTemplate: { ...form.config.invoiceTemplate, ...patch } })
+
+  const applyPreset = (industry) => {
+    const preset = (INDUSTRY_PRESETS[industry] || INDUSTRY_PRESETS.general).config
+    setCfg({ industry, ...preset })
+  }
+
+  const addCustomField = (entity) => {
+    const fields = [...(form.config.customFields?.[entity] || []), { key: `field_${Date.now()}`, label: '', type: 'text' }]
+    setCfg({ customFields: { ...form.config.customFields, [entity]: fields } })
+  }
+  const updateCustomField = (entity, idx, patch) => {
+    const fields = (form.config.customFields?.[entity] || []).map((f, i) => i === idx ? { ...f, ...patch } : f)
+    setCfg({ customFields: { ...form.config.customFields, [entity]: fields } })
+  }
+  const removeCustomField = (entity, idx) => {
+    const fields = (form.config.customFields?.[entity] || []).filter((_, i) => i !== idx)
+    setCfg({ customFields: { ...form.config.customFields, [entity]: fields } })
+  }
   const gstinOk = !form.gstin || isValidGSTIN(form.gstin)
 
   const onLogo = (e) => {
@@ -99,6 +125,164 @@ export default function Settings() {
           <Field label="Default Terms & Conditions" className="md:col-span-2">
             <Textarea rows={4} value={form.terms} onChange={(e) => set({ terms: e.target.value })} />
           </Field>
+        </div>
+      </Card>
+
+      <Card className="mt-4 p-5">
+        <h3 className="mb-4 text-sm font-semibold">Industry & Customisation</h3>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+
+          {/* Industry preset picker */}
+          <Field label="Industry Preset" className="md:col-span-2">
+            <Select
+              value={form.config.industry || 'general'}
+              onChange={(e) => applyPreset(e.target.value)}
+            >
+              {Object.entries(INDUSTRY_PRESETS).map(([key, p]) => (
+                <option key={key} value={key}>{p.label}</option>
+              ))}
+            </Select>
+            <span className="mt-1 block text-xs text-ink-muted">
+              Selecting a preset fills in sensible defaults — you can override anything below.
+            </span>
+          </Field>
+
+          {/* Terminology */}
+          <Field label={`${form.config.labels?.client || 'Client'} — Singular label`}>
+            <Input
+              value={form.config.labels?.client || ''}
+              placeholder="e.g. Client, Patient, Student, Guest"
+              onChange={(e) => setCfgLabels({ client: e.target.value })}
+            />
+          </Field>
+          <Field label="Plural label">
+            <Input
+              value={form.config.labels?.clients || ''}
+              placeholder="e.g. Clients, Patients, Students, Guests"
+              onChange={(e) => setCfgLabels({ clients: e.target.value })}
+            />
+          </Field>
+
+          {/* Invoice column toggles */}
+          <div className="md:col-span-2">
+            <div className="mb-2 text-xs font-medium text-ink-2">Invoice columns</div>
+            <div className="flex flex-wrap gap-5">
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={!!form.config.invoiceTemplate?.showHsn}
+                  onChange={(e) => setCfgTemplate({ showHsn: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300 text-brand"
+                />
+                Show HSN / SAC column
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={!!form.config.invoiceTemplate?.showDiscount}
+                  onChange={(e) => setCfgTemplate({ showDiscount: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300 text-brand"
+                />
+                Show Discount % column
+              </label>
+            </div>
+          </div>
+
+          {/* Nav toggles */}
+          <div className="md:col-span-2">
+            <div className="mb-2 text-xs font-medium text-ink-2">Navigation sections</div>
+            <div className="flex flex-wrap gap-5">
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={!!form.config.features?.expenses}
+                  onChange={(e) => setCfgFeatures({ expenses: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300 text-brand"
+                />
+                Show Expenses
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={!!form.config.features?.reports}
+                  onChange={(e) => setCfgFeatures({ reports: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300 text-brand"
+                />
+                Show GST &amp; Reports
+              </label>
+            </div>
+          </div>
+
+          {/* Client custom fields */}
+          <div className="md:col-span-2">
+            <div className="mb-2 text-xs font-medium text-ink-2">
+              Custom fields on {form.config.labels?.client || 'Client'} form
+            </div>
+            {(form.config.customFields?.client || []).map((f, idx) => (
+              <div key={idx} className="mb-2 flex items-center gap-2">
+                <Input
+                  className="flex-1"
+                  placeholder="Field label"
+                  value={f.label}
+                  onChange={(e) => updateCustomField('client', idx, { label: e.target.value })}
+                />
+                <Select
+                  className="w-28"
+                  value={f.type}
+                  onChange={(e) => updateCustomField('client', idx, { type: e.target.value })}
+                >
+                  <option value="text">Text</option>
+                  <option value="date">Date</option>
+                </Select>
+                <button
+                  onClick={() => removeCustomField('client', idx)}
+                  className="shrink-0 rounded p-1.5 text-ink-muted hover:bg-red-50 hover:text-status-critical"
+                  title="Remove field"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </button>
+              </div>
+            ))}
+            <Button variant="secondary" onClick={() => addCustomField('client')}>
+              + Add {form.config.labels?.client || 'Client'} field
+            </Button>
+          </div>
+
+          {/* Invoice custom fields */}
+          <div className="md:col-span-2">
+            <div className="mb-2 text-xs font-medium text-ink-2">
+              Custom fields on Invoice header
+            </div>
+            {(form.config.customFields?.invoice || []).map((f, idx) => (
+              <div key={idx} className="mb-2 flex items-center gap-2">
+                <Input
+                  className="flex-1"
+                  placeholder="Field label"
+                  value={f.label}
+                  onChange={(e) => updateCustomField('invoice', idx, { label: e.target.value })}
+                />
+                <Select
+                  className="w-28"
+                  value={f.type}
+                  onChange={(e) => updateCustomField('invoice', idx, { type: e.target.value })}
+                >
+                  <option value="text">Text</option>
+                  <option value="date">Date</option>
+                </Select>
+                <button
+                  onClick={() => removeCustomField('invoice', idx)}
+                  className="shrink-0 rounded p-1.5 text-ink-muted hover:bg-red-50 hover:text-status-critical"
+                  title="Remove field"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                </button>
+              </div>
+            ))}
+            <Button variant="secondary" onClick={() => addCustomField('invoice')}>
+              + Add Invoice field
+            </Button>
+          </div>
+
         </div>
       </Card>
 
