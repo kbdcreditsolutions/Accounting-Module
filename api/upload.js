@@ -36,7 +36,7 @@ export default async function handler(req, res) {
     const authHeaders = { apikey: SUPABASE_KEY }
     if (SUPABASE_KEY.split('.').length === 3) authHeaders.Authorization = `Bearer ${SUPABASE_KEY}`
 
-    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/receipts/${path}`, {
+    const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/Receipts/${path}`, {
       method: 'POST',
       headers: { ...authHeaders, 'Content-Type': mimeType },
       body: buf,
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       return send(res, 500, { error: 'Upload failed' })
     }
 
-    const url = `${SUPABASE_URL}/storage/v1/object/public/receipts/${path}`
+    const url = `${SUPABASE_URL}/storage/v1/object/public/Receipts/${path}`
     return send(res, 200, { url })
   } catch (err) {
     console.error('upload error:', err)
